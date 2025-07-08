@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Denomination Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #FF6F0F;
+            --secondary: #FFF0E6;
+            --light: #F8F8F9;
+            --dark: #001D23;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f7fafc;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark {
+            background-color: #1a202c; 
+            color: #cbd5e0; 
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        }
+
+        .denomination-card {
+            transition: all 0.3s ease;
+        }
+
+        .denomination-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .parallax {
+            background-image: url('para.jpg'); 
+            height: 400px; 
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            position: relative; 
+            z-index: 1;
+        }
+
+        .content-image {
+            max-width: 100%; 
+            height: auto; 
+            margin-top: 20px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen flex flex-col">
+        <header class="gradient-bg text-white py-8 shadow-lg relative z-10">
+            <div class="container mx-auto px-4 flex justify-between items-center">
+                <div class="flex items-center">
+                    <video autoplay loop muted src="Calculator.mp4" alt="Bank Logo" class="h-12 mr-4"></video>
+                    <div>
+                        <h1 class="text-3xl font-bold">Bank Denomination Calculator</h1>
+                        <p class="text-blue-100 mt-2">Break down amounts into currency denominations</p>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <button id="themeToggle" class="ml-4 px-4 py-2 bg-gray-800 text-white rounded-lg">
+                        Dark Mode
+                    </button>
+                </div>
+            </div>
+        </header>
+        <div class="parallax" id="parallax"></div>
+
+        <main class="flex-grow container mx-auto px-4 py-8">
+            <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="px-6 py-8">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Enter Amount</h2>
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div class="flex-grow relative">
+                            <span class="absolute left-3 top-3 text-gray-500 font-bold">₹</span>
+                            <input 
+                                type="number" 
+                                id="amountInput" 
+                                placeholder="Enter amount (1-99999)"
+                                class="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                min="1"
+                                max="99999"
+                            />
+                            <p id="errorMessage" class="text-red-500 text-sm mt-2 hidden">Please enter a valid amount between 1 and 99,999</p>
+                        </div>
+                        <button 
+                            id="calculateBtn"
+                            class="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition"
+                        >
+                            Calculate
+                        </button>
+                    </div>
+                </div>
+
+            
+                <div id="resultsSection" class="hidden px-6 pt-4 pb-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-semibold text-gray-800">Denomination Breakdown</h2>
+                        <div class="bg-blue-50 border border-blue-200 rounded-full px-4 py-2">
+                            <span id="totalAmount" class="font-bold text-blue-700">₹0</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                   
+                    </div>
+                </div>
+            </div>
+
+        
+            <div class="mt-8 max-w-3xl mx-auto bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">How it works</h2>
+                <p class="text-gray-600 mb-4">
+                    This calculator breaks down any amount (up to ₹99,999) into standard currency denominations used by banks in India.
+                    The denominations used are ₹1000, ₹500, ₹100, ₹50, ₹20, ₹10, ₹5, ₹2, and ₹1.
+                </p>
+                <p class="text-gray-600">
+                    Simply enter your amount and click "Calculate" to see how many notes/coins of each denomination make up your total amount.
+                </p>
+            </div>
+        </main>
+
+      
+        <footer class="bg-gray-800 text-white py-6">
+            <div class="container mx-auto px-4 text-center">
+                <p>© 2023 Bank Denomination Calculator. All rights reserved.</p>
+                <p class="text-gray-400 mt-2">Designed for banking applications</p>
+            </div>
+        </footer>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const amountInput = document.getElementById('amountInput');
+            const calculateBtn = document.getElementById('calculateBtn');
+            const resultsSection = document.getElementById('resultsSection');
+            const totalAmountElement = document.getElementById('totalAmount');
+            const errorMessage = document.getElementById('errorMessage');
+            const themeToggle = document.getElementById('themeToggle');
+            
+       
+            const denominations = [1000, 500, 100, 50, 20, 10, 5, 2, 1];
+            
+            calculateBtn.addEventListener('click', function() {
+                const amount = parseInt(amountInput.value);
+                
+           
+                errorMessage.classList.add('hidden');
+                
+             
+                if (isNaN(amount) || amount < 1 || amount > 99999) {
+                    errorMessage.classList.remove('hidden');
+                    resultsSection.classList.add('hidden');
+                    return;
+                }
+                
+                
+                const breakdown = calculateDenominations(amount);
+                
+               
+                displayResults(breakdown, amount);
+            });
+            
+            function calculateDenominations(amount) {
+                let remainingAmount = amount;
+                let breakdown = {};
+                
+                denominations.forEach(denomination => {
+                    const count = Math.floor(remainingAmount / denomination);
+                    if (count > 0) {
+                        breakdown[denomination] = count;
+                        remainingAmount -= count * denomination;
+                    }
+                });
+                
+                return breakdown;
+            }
+            
+            function displayResults(breakdown, totalAmount) {
+                const denominationsGrid = document.querySelector('#resultsSection .grid');
+                denominationsGrid.innerHTML = '';
+                
+        
+                totalAmountElement.textContent = `₹${totalAmount.toLocaleString()}`;
+                
+           
+                Object.keys(breakdown).sort((a, b) => b - a).forEach(key => {
+                    const card = document.createElement('div');
+                    card.className = 'denomination-card bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between';
+                    
+                    const noteValue = document.createElement('div');
+                    noteValue.className = 'font-bold text-blue-600 text-lg';
+                    noteValue.textContent = `₹${key}`;
+                    
+                    const noteCount = document.createElement('div');
+                    noteCount.className = 'bg-gray-100 text-gray-800 font-medium px-3 py-1 rounded-full text-sm';
+                    noteCount.textContent = `${breakdown[key]} ${breakdown[key] > 1 ? 'notes' : 'note'}`;
+                    
+                    card.appendChild(noteValue);
+                    card.appendChild(noteCount);
+                    
+                    denominationsGrid.appendChild(card);
+                });
+                
+               
+                resultsSection.classList.remove('hidden');
+                
+              
+                resultsSection.scrollIntoView({ behavior: 'smooth' });
+            }
+
+           
+            themeToggle.addEventListener('click', function() {
+                document.body.classList.toggle('dark');
+                themeToggle.textContent = document.body.classList.contains('dark') ? 'Light Theme' : 'Dark Theme';
+            });
+        });
+
+    
+        document.addEventListener('scroll', function() {
+            const parallax = document.getElementById('parallax');
+            const scrollPosition = window.pageYOffset;
+            parallax.style.backgroundPositionY = `${scrollPosition * 0.5}px`; 
+        });
+    </script>
+</body>
+</html>

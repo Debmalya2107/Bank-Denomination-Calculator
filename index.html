@@ -83,19 +83,29 @@
         <main class="flex-grow container mx-auto px-4 py-8">
             <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
                 <div class="px-6 py-8">
-                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Enter Amount</h2>
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Enter Amount and Denomination</h2>
                     <div class="flex flex-col md:flex-row gap-4">
                         <div class="flex-grow relative">
                             <span class="absolute left-3 top-3 text-gray-500 font-bold">₹</span>
                             <input 
                                 type="number" 
                                 id="amountInput" 
-                                placeholder="Enter amount (1-99999)"
+                                placeholder="Enter amount"
                                 class="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                                 min="1"
-                                max="99999"
                             />
-                            <p id="errorMessage" class="text-red-500 text-sm mt-2 hidden">Please enter a valid amount between 1 and 99,999</p>
+                            <p id="errorMessage" class="text-red-500 text-sm mt-2 hidden">Please enter a valid amount</p>
+                        </div>
+                        <div class="flex-grow relative">
+                            <span class="absolute left-3 top-3 text-gray-500 font-bold">₹</span>
+                            <input 
+                                type="number" 
+                                id="denominationInput" 
+                                placeholder="Enter denomination"
+                                class="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                                min="1"
+                            />
+                            <p id="denomErrorMessage" class="text-red-500 text-sm mt-2 hidden">Please enter a valid denomination</p>
                         </div>
                         <button 
                             id="calculateBtn"
@@ -106,7 +116,6 @@
                     </div>
                 </div>
 
-            
                 <div id="resultsSection" class="hidden px-6 pt-4 pb-8">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-semibold text-gray-800">Denomination Breakdown</h2>
@@ -116,73 +125,76 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                   
                     </div>
                 </div>
             </div>
 
-        
             <div class="mt-8 max-w-3xl mx-auto bg-white rounded-lg shadow-md p-6">
                 <h2 class="text-xl font-semibold text-gray-800 mb-4">How it works</h2>
                 <p class="text-gray-600 mb-4">
-                    This calculator breaks down any amount (up to ₹99,999) into standard currency denominations used by banks in India.
-                    The denominations used are ₹1000, ₹500, ₹100, ₹50, ₹20, ₹10, ₹5, ₹2, and ₹1.
-                </p>
-                <p class="text-gray-600">
-                    Simply enter your amount and click "Calculate" to see how many notes/coins of each denomination make up your total amount.
+                    This calculator breaks down any amount into the specified currency denomination.
+                    Simply enter your amount and the denomination you want to receive it in, then click "Calculate" to see how many notes/coins of that denomination make up your total amount.
                 </p>
             </div>
         </main>
 
-      
         <footer class="bg-gray-800 text-white py-6">
             <div class="container mx-auto px-4 text-center">
                 <p>© 2025 Bank Denomination Calculator. All rights reserved.</p>
-                <p class="text-gray-400 mt-2">Designed for banking applications</p>
+                <p class="text-gray-400 mt-2">Designed for banking applications By Debmalya Bhattacharyya</p>
             </div>
         </footer>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const amountInput = document.getElementById('amountInput');
+            const denominationInput = document.getElementById('denominationInput');
             const calculateBtn = document.getElementById('calculateBtn');
             const resultsSection = document.getElementById('resultsSection');
             const totalAmountElement = document.getElementById('totalAmount');
             const errorMessage = document.getElementById('errorMessage');
+            const denomErrorMessage = document.getElementById('denomErrorMessage');
             const themeToggle = document.getElementById('themeToggle');
-            
-       
-            const denominations = [1000, 500, 100, 50, 20, 10, 5, 2, 1];
             
             calculateBtn.addEventListener('click', function() {
                 const amount = parseInt(amountInput.value);
+                const denomination = parseInt(denominationInput.value);
                 
-           
                 errorMessage.classList.add('hidden');
+                denomErrorMessage.classList.add('hidden');
                 
-             
-                if (isNaN(amount) || amount < 1 || amount > 99999) {
+                if (isNaN(amount) || amount < 1) {
                     errorMessage.classList.remove('hidden');
                     resultsSection.classList.add('hidden');
                     return;
                 }
                 
+                if (isNaN(denomination) || denomination < 1) {
+                    denomErrorMessage.classList.remove('hidden');
+                    resultsSection.classList.add('hidden');
+                    return;
+                }
                 
-                const breakdown = calculateDenominations(amount);
+                const breakdown = calculateDenominations(amount, denomination);
                 
-               
                 displayResults(breakdown, amount);
             });
             
-            function calculateDenominations(amount) {
-                let remainingAmount = amount;
+            function calculateDenominations(amount, denomination) {
                 let breakdown = {};
+                const count = Math.floor(amount / denomination);
+                if (count > 0) {
+                    breakdown[denomination] = count;
+                    amount -= count * denomination;
+                }
                 
-                denominations.forEach(denomination => {
-                    const count = Math.floor(remainingAmount / denomination);
+                // Handle remaining amount with smaller denominations
+                const smallerDenominations = [100, 50, 20, 10, 5, 2, 1];
+                smallerDenominations.forEach(denom => {
+                    const count = Math.floor(amount / denom);
                     if (count > 0) {
-                        breakdown[denomination] = count;
-                        remainingAmount -= count * denomination;
+                        breakdown[denom] = count;
+                        amount -= count * denom;
                     }
                 });
                 
@@ -193,10 +205,8 @@
                 const denominationsGrid = document.querySelector('#resultsSection .grid');
                 denominationsGrid.innerHTML = '';
                 
-        
                 totalAmountElement.textContent = `₹${totalAmount.toLocaleString()}`;
                 
-           
                 Object.keys(breakdown).sort((a, b) => b - a).forEach(key => {
                     const card = document.createElement('div');
                     card.className = 'denomination-card bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between';
@@ -215,21 +225,16 @@
                     denominationsGrid.appendChild(card);
                 });
                 
-               
                 resultsSection.classList.remove('hidden');
-                
-              
                 resultsSection.scrollIntoView({ behavior: 'smooth' });
             }
 
-           
             themeToggle.addEventListener('click', function() {
                 document.body.classList.toggle('dark');
                 themeToggle.textContent = document.body.classList.contains('dark') ? 'Light Theme' : 'Dark Theme';
             });
         });
 
-    
         document.addEventListener('scroll', function() {
             const parallax = document.getElementById('parallax');
             const scrollPosition = window.pageYOffset;
